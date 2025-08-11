@@ -1,5 +1,5 @@
 Curl to test : 
-curl "http://127.0.0.1:5000/translate_string?text_to_translate=I%20am%20Ann"
+curl "https://flask-api-ann-939136731215.us-central1.run.app/translate_string?text_to_translate=I%20am%20Ann"
 
 gcloud config set project original-spider-468713-d4
 
