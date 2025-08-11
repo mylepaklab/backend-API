@@ -11,6 +11,8 @@ gcloud projects add-iam-policy-binding original-spider-468713-d4 --member=servic
 
 gcloud projects add-iam-policy-binding original-spider-468713-d4 --member=serviceAccount:939136731215@cloudbuild.gserviceaccount.com --role=roles/cloudbuild.builds.editor
 
-gcloud run deploy flask-api-ann --source . --region us-central1 --allow-unauthenticated
+gcloud run deploy flask-api-ann --source . --region us-central1 --allow-unauthenticated //deployment of code changes to server
+
+gcloud run services update-traffic flask-api-ann --to-revisions=0 //diable traffic
 
 
