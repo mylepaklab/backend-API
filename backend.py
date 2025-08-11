@@ -1,6 +1,10 @@
 from flask import Flask, request
+from flask_cors import CORS
 
 app = Flask(__name__)
+
+# Only allow requests from localhost:3000
+CORS(app, origins=["http://localhost:3000"])
 
 @app.route('/get_name')
 def get_name():
@@ -16,4 +20,4 @@ def translate_string():
     return "私の名前はあんちゃんです"
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, host='0.0.0.0', port=8080)
