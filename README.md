@@ -13,6 +13,9 @@ gcloud projects add-iam-policy-binding original-spider-468713-d4 --member=servic
 
 gcloud run deploy flask-api-ann --source . --region us-central1 --allow-unauthenticated //deployment of code changes to server
 
-gcloud run services update-traffic flask-api-ann --to-revisions=0 //diable traffic
+gcloud run services update-traffic flask-api-ann --to-revisions=0 //disable traffic
 
+
+
+TESTING LLM SEA-LION: curl 'https://api.sea-lion.ai/v1/models' -H 'Authorization: Bearer sk-hwe6UCi9I0WCUOkekD16oQ'
 
