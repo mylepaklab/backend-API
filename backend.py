@@ -4,8 +4,11 @@ from flask_cors import CORS
 
 app = Flask(__name__)
 
-# Only allow requests from localhost:3000
-CORS(app, origins=["http://localhost:3000", "https://bim-translator-app-537545827003.asia-southeast1.run.app"])
+# Only allow requests from specific frontends and allow credentials
+CORS(app, supports_credentials=True, origins=[
+    "http://localhost:3000",
+    "https://bim-translator-app-537545827003.asia-southeast1.run.app"
+])
 
 @app.route('/get_name')
 def get_name():
