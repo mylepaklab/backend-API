@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify
 import requests
 from flask_cors import CORS
+import re
 
 app = Flask(__name__)
 
@@ -12,7 +13,7 @@ CORS(app, supports_credentials=True, origins=[
 
 @app.route('/get_name')
 def get_name():
-    return "I am the Ann"
+    return "BIMTranslator Prototype V1"
 
 @app.route('/translate_string')
 def translate_string():
@@ -20,8 +21,17 @@ def translate_string():
     SEA_LION_URL = "https://api.sea-lion.ai/v1/chat/completions"
     MODEL_NAME = "aisingapore/Llama-SEA-LION-v3.5-8B-R"
     
-    #text_to_translate = request.args.get('text_to_translate')
-    text_to_translate = "My Name is Ann"
+    parameter_input = request.args.get('text_to_translate')
+    # Step 1: Split by either "YA" or "STOP"
+    parts = re.split(r'YA|STOP', parameter_input)
+    # Step 2: Remove the last item
+    parts = parts[:-1]
+    # Step 3: Keep only the first character of each remaining item
+    first_chars = [part[0] for part in parts if part]  # check for non-empty part
+    # Step 4: Join them back into a string
+    result = ''.join(first_chars)
+    
+    text_to_translate = f"My Name is {result}"
     
     if not text_to_translate:
         return "Missing 'text_to_translate' parameter", 400
