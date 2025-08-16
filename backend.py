@@ -24,7 +24,7 @@ def translate_string():
     
     parameter_input = request.args.get('text_to_translate')
     # Step 1: Split by either "YA" or "STOP"
-    parts = re.split(r'YA|STOP', parameter_input)
+    parts = re.split(r'YA|STOP|ya|stop', parameter_input)
     # Step 2: Remove the last item
     parts = parts[:-1]
     # Step 3: Keep only the first character of each remaining item
@@ -81,4 +81,5 @@ def translate_string():
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=8080)
+
 
