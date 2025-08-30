@@ -1,7 +1,7 @@
 Curl to test : 
 curl -i -H "Origin: http://localhost:3000" "https://flask-api-ann-jxtsjymlfa-uc.a.run.app/translate_string?text_to_translate=AAYANNNYAAAASTOP"
 
-curl -i -H "Origin: http://localhost:3000" ""https://flask-api-ann-jxtsjymlfa-uc.a.run.app/predict_text?gesture_words_array=Fish%2Ctaste%2Csalty%2C%3F"
+curl -i -H "Origin: http://localhost:3000" "https://backend-api-fm4g.onrender.com/predict_text?gesture_words_array=Fish%2Ctaste%2Csalty%2C%3F"
 
 gcloud config set project original-spider-468713-d4
 
