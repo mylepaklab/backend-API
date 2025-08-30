@@ -8,8 +8,7 @@ app = Flask(__name__)
 # Only allow requests from specific frontends and allow credentials
 CORS(app, supports_credentials=True, origins=[
     "http://localhost:3000",
-    "https://bim-translator-app-537545827003.asia-southeast1.run.app",
-    "https://docker-react-g40o.onrender.com"
+    "https://bim-translator-app-537545827003.asia-southeast1.run.app"
 ])
 
 @app.route('/get_name')
@@ -24,7 +23,7 @@ def translate_string():
     
     parameter_input = request.args.get('text_to_translate')
     # Step 1: Split by either "YA" or "STOP"
-    parts = re.split(r'YA|STOP|ya|stop', parameter_input)
+    parts = re.split(r'YA|STOP', parameter_input)
     # Step 2: Remove the last item
     parts = parts[:-1]
     # Step 3: Keep only the first character of each remaining item
@@ -79,7 +78,65 @@ def translate_string():
     except (KeyError, IndexError):
         return jsonify({"error": "Unexpected response format", "raw_response": response.text}), 500
 
+@app.route('/predict_text')
+def predict_text():
+    API_KEY = "sk-hwe6UCi9I0WCUOkekD16oQ"  # Replace with your actual Sea-Lion API key
+    SEA_LION_URL = "https://api.sea-lion.ai/v1/chat/completions"
+    MODEL_NAME = "aisingapore/Llama-SEA-LION-v3.5-8B-R"
+    
+    parameter_input = request.args.get('gesture_words_array')
+    print("gesture_words_array =", parameter_input)
+    print("Type:", type(parameter_input))
+    
+    if parameter_input is None:
+        return "Missing 'gesture_words_array' parameter", 400
+    #gesture_words_array = "Fish, taste, salty,?"
+    
+    if '?' in parameter_input:
+        prompt = f"Construct a simple question using only {parameter_input} words in English and then translates to Malay and Thai without any commentaries"
+    else:
+        prompt = f"Construct a simple sentence using only {parameter_input} words in English and then translates to Malay and Thai without any commentaries"
+    
+    headers = {
+        "accept": "text/plain",
+        "Authorization": f"Bearer {API_KEY}",
+        "Content-Type": "application/json"
+    }
+    
+    payload = {
+        "model": MODEL_NAME,
+        "messages": [
+            {
+                "role": "user",
+                "content": prompt
+            }
+        ],
+        "chat_template_kwargs": {
+            "thinking_mode": "off"
+        }
+    }
+    
+    try:
+        response = requests.post(SEA_LION_URL, headers=headers, json=payload)
+        response.raise_for_status()
+        data = response.json()
+
+        # Extract the translated content from the nested response
+        translated_text = data['choices'][0]['message']['content'].strip()
+
+        return jsonify({
+            "original": parameter_input,
+            "translated": translated_text,
+            "model": data.get("model"),
+            "tokens_used": data.get("usage", {}),
+            "response_id": data.get("id")
+        })
+
+    except requests.exceptions.RequestException as e:
+        return jsonify({"error": "Predict failed", "details": str(e)}), 500
+    except (KeyError, IndexError):
+        return jsonify({"error": "Unexpected response format", "raw_response": response.text}), 500
+    return "BIMTranslator Prototype V1"
+
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=8080)
-
-
