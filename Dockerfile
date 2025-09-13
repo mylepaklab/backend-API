@@ -15,6 +15,9 @@ from sentence_transformers import SentenceTransformer; \
 model = SentenceTransformer('paraphrase-MiniLM-L6-v2'); \
 model.save('/app/models/paraphrase-MiniLM-L6-v2')"
 
+# Optional: Clean up to save image space
+RUN apt-get update && apt-get clean && rm -rf /root/.cache /var/lib/apt/lists/*
+
 # Now copy the rest of the app
 COPY . /app
 
@@ -23,5 +26,6 @@ ENV PORT=8080
 
 # Run the app with Gunicorn (longer timeout to prevent SIGKILL on slow load)
 CMD ["gunicorn", "--bind", "0.0.0.0:8080", "--workers", "1", "--timeout", "120", "backend:app"]
+
 
 
