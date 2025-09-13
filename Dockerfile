@@ -8,9 +8,12 @@ COPY requirements.txt .
 # Install dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-RUN python -c "\
+# Download model to app-local directory so it's available at runtime
+RUN mkdir -p /app/models && \
+    python -c "\
 from sentence_transformers import SentenceTransformer; \
-model = SentenceTransformer('paraphrase-MiniLM-L6-v2')"
+model = SentenceTransformer('paraphrase-MiniLM-L6-v2'); \
+model.save('/app/models/paraphrase-MiniLM-L6-v2')"
 
 # Now copy the rest of the app
 COPY . /app
@@ -20,4 +23,5 @@ ENV PORT=8080
 
 # Run the app with Gunicorn (longer timeout to prevent SIGKILL on slow load)
 CMD ["gunicorn", "--bind", "0.0.0.0:8080", "--workers", "1", "--timeout", "120", "backend:app"]
+
 
