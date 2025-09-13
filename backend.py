@@ -2,6 +2,8 @@ from flask import Flask, request, jsonify
 import requests
 from flask_cors import CORS
 import re
+import csv
+import os
 
 # New: Sentence embedding
 from sentence_transformers import SentenceTransformer, util
@@ -13,6 +15,8 @@ CORS(app, supports_credentials=True, origins=[
     "http://localhost:3000",
     "https://bim-translator-app-537545827003.asia-southeast1.run.app"
 ])
+
+ANIMATION_FOLDER = "animation-sequence-by-word"
 
 print("Loading sentence transformer model...")
 embedding_model = SentenceTransformer('/app/models/paraphrase-MiniLM-L6-v2')
@@ -28,6 +32,20 @@ known_animations = {
 
 animation_keys = list(known_animations.keys())
 animation_embeddings = embedding_model.encode(animation_keys, convert_to_tensor=True)
+
+def load_animation_sequences(files):
+    animation_sequence = {}
+
+    for filename in files:
+        path = os.path.join(ANIMATION_FOLDER, filename)
+        if os.path.exists(path):
+            with open(path, newline='', encoding='utf-8') as csvfile:
+                reader = csv.DictReader(csvfile)
+                animation_sequence[filename] = list(reader)
+        else:
+            animation_sequence[filename] = None
+
+    return animation_sequence
 
 @app.route('/match_animation_sequence')
 def match_animation_sequence():
@@ -47,12 +65,24 @@ def match_animation_sequence():
 
     if best_score >= 0.7:
         matched_file = known_animations[matched_phrase]
-        return jsonify({
-            "input": input_sentence,
-            "matched_phrase": matched_phrase,
-            "animation_file": matched_file,
-            "confidence": round(best_score, 4)
-        })
+
+        if isinstance(matched_file, list):
+            # multiple files, load each CSV content
+            animation_sequence = load_animation_sequences(matched_file)
+            return jsonify({
+                "input": input_sentence,
+                "matched_phrase": matched_phrase,
+                "animation_sequence": animation_sequence,
+                "confidence": round(best_score, 4)
+            })
+        else:
+            # single file, just return the filename as before
+            return jsonify({
+                "input": input_sentence,
+                "matched_phrase": matched_phrase,
+                "animation_file": matched_file,
+                "confidence": round(best_score, 4)
+            })
     else:
         return jsonify({
             "input": input_sentence,
@@ -61,7 +91,7 @@ def match_animation_sequence():
             "confidence": round(best_score, 4),
             "message": "No good match found"
         })
-
+        
 @app.route('/get_name')
 def get_name():
     return "BIMTranslator Prototype V1"
@@ -191,6 +221,7 @@ def predict_text():
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=8080)
+
 
 
 
