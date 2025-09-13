@@ -3,6 +3,9 @@ import requests
 from flask_cors import CORS
 import re
 
+# New: Sentence embedding
+from sentence_transformers import SentenceTransformer, util
+import torch
 app = Flask(__name__)
 
 # Only allow requests from specific frontends and allow credentials
@@ -10,6 +13,54 @@ CORS(app, supports_credentials=True, origins=[
     "http://localhost:3000",
     "https://bim-translator-app-537545827003.asia-southeast1.run.app"
 ])
+
+print("Loading sentence transformer model...")
+embedding_model = SentenceTransformer('distiluse-base-multilingual-cased')
+print("Model loaded.")
+
+known_animations = {
+    "apa nama": "apa_nama_sequence.csv",
+    "terima kasih": "thank_you_sequence.csv",
+    "siapa awak": "who_are_you_sequence.csv",
+    "saya makan": "i_eat_sequence.csv",
+    "kamu siapa": "who_are_you_sequence.csv"
+}
+
+animation_keys = list(known_animations.keys())
+animation_embeddings = embedding_model.encode(animation_keys, convert_to_tensor=True)
+
+@app.route('/match_animation_sequence')
+def match_animation_sequence():
+    input_sentence = request.args.get('sentence')
+    if not input_sentence:
+        return jsonify({"error": "Missing 'sentence' parameter"}), 400
+
+    # Encode input sentence
+    input_embedding = embedding_model.encode(input_sentence, convert_to_tensor=True)
+
+    # Compute cosine similarity
+    cos_scores = util.cos_sim(input_embedding, animation_embeddings)[0]
+
+    best_match_idx = torch.argmax(cos_scores).item()
+    best_score = cos_scores[best_match_idx].item()
+    matched_phrase = animation_keys[best_match_idx]
+
+    if best_score >= 0.7:
+        matched_file = known_animations[matched_phrase]
+        return jsonify({
+            "input": input_sentence,
+            "matched_phrase": matched_phrase,
+            "animation_file": matched_file,
+            "confidence": round(best_score, 4)
+        })
+    else:
+        return jsonify({
+            "input": input_sentence,
+            "matched_phrase": None,
+            "animation_file": None,
+            "confidence": round(best_score, 4),
+            "message": "No good match found"
+        })
 
 @app.route('/get_name')
 def get_name():
@@ -140,3 +191,4 @@ def predict_text():
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=8080)
+
