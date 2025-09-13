@@ -2,14 +2,22 @@ FROM python:3.10-slim
 
 WORKDIR /app
 
-# Copy only requirements first
-COPY requirements.txt requirements.txt
+# Copy only requirements first for better Docker caching
+COPY requirements.txt .
 
+# Install dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Now copy the rest of the code
+# Preload sentence-transformers model (optional but highly recommended)
+RUN python -c "\
+from sentence_transformers import SentenceTransformer; \
+model = SentenceTransformer('distiluse-base-multilingual-cased')"
+
+# Now copy the rest of the app
 COPY . /app
 
+# Set the environment port (used by Gunicorn)
 ENV PORT=8080
 
-CMD ["gunicorn", "-b", ":8080", "backend:app"]
+# Run the app with Gunicorn (longer timeout to prevent SIGKILL on slow load)
+CMD ["gunicorn", "--bind", "0.0.0.0:8080", "--workers", "1", "--timeout", "120", "backend:app"]
