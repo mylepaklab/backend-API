@@ -19,11 +19,11 @@ embedding_model = SentenceTransformer('/app/models/paraphrase-MiniLM-L6-v2')
 print("Model loaded.")
 
 known_animations = {
-    "apa nama": "apa_nama_sequence.csv",
-    "terima kasih": "thank_you_sequence.csv",
-    "siapa awak": "who_are_you_sequence.csv",
-    "saya makan": "i_eat_sequence.csv",
-    "kamu siapa": "who_are_you_sequence.csv"
+    "apa nama": ["apa.csv", "nama.csv"],
+    "terima kasih": ["thank_you_sequence.csv"],
+    "siapa awak": ["who_are_you_sequence.csv"],
+    "saya makan": ["i_eat_sequence.csv"],
+    "kamu siapa": ["who_are_you_sequence.csv"]
 }
 
 animation_keys = list(known_animations.keys())
@@ -191,6 +191,7 @@ def predict_text():
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=8080)
+
 
 
 
