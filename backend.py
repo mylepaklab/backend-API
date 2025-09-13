@@ -15,7 +15,7 @@ CORS(app, supports_credentials=True, origins=[
 ])
 
 print("Loading sentence transformer model...")
-embedding_model = SentenceTransformer('distiluse-base-multilingual-cased')
+embedding_model = SentenceTransformer('paraphrase-MiniLM-L6-v2')
 print("Model loaded.")
 
 known_animations = {
@@ -191,4 +191,5 @@ def predict_text():
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=8080)
+
 
