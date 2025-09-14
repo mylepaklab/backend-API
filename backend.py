@@ -24,10 +24,8 @@ print("Model loaded.")
 
 known_animations = {
     "apa nama": ["Apa.csv", "Nama.csv"],
-    "terima kasih": ["thank_you_sequence.csv"],
-    "siapa awak": ["who_are_you_sequence.csv"],
-    "saya makan": ["i_eat_sequence.csv"],
-    "kamu siapa": ["who_are_you_sequence.csv"]
+    "pekerjaan apa": ["Pekerjaan.csv", "Apa.csv"],
+    "berapa tinggi": ["Berapa.csv", "Tinggi.csv"]
 }
 
 animation_keys = list(known_animations.keys())
@@ -221,6 +219,7 @@ def predict_text():
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=8080)
+
 
 
 
