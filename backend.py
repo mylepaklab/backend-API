@@ -13,7 +13,8 @@ app = Flask(__name__)
 # Only allow requests from specific frontends and allow credentials
 CORS(app, supports_credentials=True, origins=[
     "http://localhost:3000",
-    "https://bim-translator-app-537545827003.asia-southeast1.run.app"
+    "https://bim-translator-app-537545827003.asia-southeast1.run.app",
+    "https://bim-translator-l4md.vercel.app"
 ])
 
 ANIMATION_FOLDER = "animation-sequence-by-word"
@@ -219,6 +220,7 @@ def predict_text():
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=8080)
+
 
 
 
