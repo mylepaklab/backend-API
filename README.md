@@ -1,23 +1,33 @@
-Curl to test : 
-curl -i -H "Origin: http://localhost:3000" "https://flask-api-ann-jxtsjymlfa-uc.a.run.app/translate_string?text_to_translate=AAYANNNYAAAASTOP"
+# AI-BIMTranslator API
 
-curl -i -H "Origin: http://localhost:3000" "https://backend-api-fm4g.onrender.com/predict_text?gesture_words_array=Fish%2Ctaste%2Csalty%2C%3F"
+## Overview
+AI-BIMTranslator is a Flask-based API designed for translating simple sentences and matching animation sequences based on input text. It leverages sentence embeddings using the `sentence-transformers` library for semantic similarity and integrates with the Sea-Lion translation API to provide multilingual translations.
 
-gcloud config set project original-spider-468713-d4
+## Features
+- Match input sentences to predefined animation sequences using semantic search.
+- Translate sentences related to height, occupation, or name into Malay, Thai, and Vietnamese.
+- Fuzzy matching for known occupations.
+- CORS enabled to allow specific frontend clients.
 
-gcloud projects add-iam-policy-binding original-spider-468713-d4 --member=serviceAccount:939136731215@cloudbuild.gserviceaccount.com --role=roles/run.admin
+## API Endpoints
 
-gcloud projects add-iam-policy-binding original-spider-468713-d4 --member=serviceAccount:939136731215@cloudbuild.gserviceaccount.com --role=roles/storage.admin
+### `GET /`
+Returns a string with available API routes.
 
-gcloud projects add-iam-policy-binding original-spider-468713-d4 --member=serviceAccount:939136731215@cloudbuild.gserviceaccount.com --role=roles/iam.serviceAccountUser
+### `GET /health`
+Returns a JSON indicating the server is healthy.
 
-gcloud projects add-iam-policy-binding original-spider-468713-d4 --member=serviceAccount:939136731215@cloudbuild.gserviceaccount.com --role=roles/cloudbuild.builds.editor
+```json
+{
+  "status": "ok"
+}
+```
 
-gcloud run deploy flask-api-ann --source . --region us-central1 --allow-unauthenticated //deployment of code changes to server
+### `GET /get_name`
+Returns the API name/version.
 
-gcloud run services update-traffic flask-api-ann --to-revisions=0 //disable traffic
+### `GET /match_animation_sequence`
+Matches the input sentence with known animation sequences.
 
-
-
-TESTING LLM SEA-LION: curl 'https://api.sea-lion.ai/v1/models' -H 'Authorization: Bearer sk-hwe6UCi9I0WCUOkekD16oQ'
-
+### `GET /form_answer`
+Translates input text related to height, occupation, or name into multiple languages using Sea-Lion API.
