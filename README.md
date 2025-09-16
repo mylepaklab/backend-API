@@ -31,3 +31,15 @@ Matches the input sentence with known animation sequences.
 
 ### `GET /form_answer`
 Translates input text related to height, occupation, or name into multiple languages using Sea-Lion API.
+#### Curl Test for Occupation
+```json
+curl -i -H "Origin: http://localhost:3000" "https://backend-api-fm4g.onrender.com/form_answer?text_to_translate=DoktorSTOP"
+```
+#### Curl Test for Name
+```json
+curl -i -H "Origin: http://localhost:3000" "https://backend-api-fm4g.onrender.com/form_answer?text_to_translate=AndrewSTOP"
+```
+#### Curl Test for Height
+```json
+curl -i -H "Origin: http://localhost:3000" "https://backend-api-fm4g.onrender.com/form_answer?text_to_translate=117STOP"
+```
