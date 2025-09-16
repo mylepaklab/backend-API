@@ -133,16 +133,13 @@ def translate_string():
     parameter_input = request.args.get('text_to_translate')
     if not parameter_input:
         return jsonify({"error": "Missing 'text_to_translate' parameter"}), 400
-        
-    # Step 1: Split by "STOP". Anything before stop is treated as a string
-    parts = re.split(r'STOP', parameter_input)
-    # Step 2: Remove the last item
-    parts = parts[:-1]
-    # Step 3: Keep only the first character of each remaining item
-    first_chars = [part[0] for part in parts if part]  # check for non-empty part
-    # Step 4: Join them back into a string
-    result = ''.join(first_chars)
-    
+
+    if parameter_input.endswith("STOP"):
+        result = parameter_input[:-4]
+    else:
+        result = parameter_input
+
+    result = result.strip().title()  # or .lower(), depending on your embeddings
     text_to_translate = None
     prompt = "Unconstructed Prompt"
 
@@ -151,10 +148,15 @@ def translate_string():
         prompt = f"Give translation of {text_to_translate} in Malay, Thai and Vietnam language without any commentaries"
     else:
         word_embedding = embedding_model.encode(result, convert_to_tensor=True)
-        # Compute similarity
-        occupation_score = util.cos_sim(word_embedding, occupation_embeddings).max().item()
-        if occupation_score > 0.7: 
-            text_to_translate = f"My occupation is {result}"
+        # Compute cosine similarity between input and all occupation embeddings
+        cos_scores = util.cos_sim(word_embedding, occupation_embeddings)[0]
+        # Get the best match index and score
+        best_match_idx = torch.argmax(cos_scores).item()
+        occupation_best_score = cos_scores[best_match_idx].item()
+        # Get the matched occupation string
+        matched_occupation = known_occupations[best_match_idx]
+        if occupation_best_score >= 0.7: 
+            text_to_translate = f"My occupation is {matched_occupation}"
             prompt = f"Give translation of {text_to_translate} in Malay, Thai and Vietnam language without any commentaries"
         else: 
             text_to_translate = f"My Name is {result}"
@@ -193,6 +195,8 @@ def translate_string():
         return jsonify({
             "original": text_to_translate,
             "translated": translated_text,
+            "matched_occupation": matched_occupation if occupation_best_score >= 0.7 else None,
+            "confidence": round(occupation_best_score, 4),
             "model": data.get("model"),
             "tokens_used": data.get("usage", {}),
             "response_id": data.get("id")
@@ -206,6 +210,7 @@ def translate_string():
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=8080)
+
 
 
 
