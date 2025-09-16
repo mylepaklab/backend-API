@@ -152,7 +152,7 @@ def translate_string():
     matched_occupation = None
 
     if result.isdigit():        
-        text_to_translate = f"My height is {result}"
+        text_to_translate = f"My height is {result} cm"
         prompt = f"Give translation of {text_to_translate} in Malay, Thai and Vietnam language without any commentaries"
     else:
         match = None
@@ -225,4 +225,5 @@ def translate_string():
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=8080)
+
 
