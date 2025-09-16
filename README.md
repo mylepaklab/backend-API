@@ -28,18 +28,22 @@ Returns the API name/version.
 
 ### `GET /match_animation_sequence`
 Matches the input sentence with known animation sequences.
+#### Curl Test for Animation Landmark Retrieval
+```bash
+curl -i -H "Origin: http://localhost:3000" "https://backend-api-fm4g.onrender.com/match_animation_sequence?sentence=apa%2Cnama"
+```
 
 ### `GET /form_answer`
 Translates input text related to height, occupation, or name into multiple languages using Sea-Lion API.
 #### Curl Test for Occupation
-```json
+```bash
 curl -i -H "Origin: http://localhost:3000" "https://backend-api-fm4g.onrender.com/form_answer?text_to_translate=DoktorSTOP"
 ```
 #### Curl Test for Name
-```json
+```bash
 curl -i -H "Origin: http://localhost:3000" "https://backend-api-fm4g.onrender.com/form_answer?text_to_translate=AndrewSTOP"
 ```
 #### Curl Test for Height
-```json
+```bash
 curl -i -H "Origin: http://localhost:3000" "https://backend-api-fm4g.onrender.com/form_answer?text_to_translate=117STOP"
 ```
