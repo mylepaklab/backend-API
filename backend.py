@@ -29,8 +29,28 @@ known_animations = {
     "berapa tinggi": ["Berapa.csv", "Tinggi.csv"]
 }
 
+known_occupations = [
+    "Doctor", 
+    "Jurutera", 
+    "Chef", 
+    "Cikgu", 
+    "Jururawat",
+    "Ahli Sukan",
+    "Menteri",
+    "Wartawan",
+    "Penjawat Awam",
+    "Saintis",
+    "Polis",
+    "Bomba",
+    "Askar",
+    "Guru",
+    "Akauntan",
+    "Ahli Usahawan"
+    ]
+
 animation_keys = list(known_animations.keys())
 animation_embeddings = embedding_model.encode(animation_keys, convert_to_tensor=True)
+occupation_embeddings = embedding_model.encode(known_occupations, convert_to_tensor=True)
 
 def load_animation_sequences(files):
     animation_sequence = {}
@@ -91,6 +111,15 @@ def match_animation_sequence():
             "message": "No good match found"
         })
         
+@app.route('/')
+def index():
+    messageString = "Final Route for this API is /health, /get_name, /translate_string and /match_animation_sequence"
+    return messageString
+
+@app.route('/health')
+def health():
+    return jsonify({"status": "ok"}), 200
+
 @app.route('/get_name')
 def get_name():
     return "BIMTranslator Prototype V1"
@@ -102,8 +131,11 @@ def translate_string():
     MODEL_NAME = "aisingapore/Llama-SEA-LION-v3.5-8B-R"
     
     parameter_input = request.args.get('text_to_translate')
-    # Step 1: Split by either "YA" or "STOP"
-    parts = re.split(r'YA|STOP', parameter_input)
+    if not parameter_input:
+        return jsonify({"error": "Missing 'text_to_translate' parameter"}), 400
+        
+    # Step 1: Split by "STOP". Anything before stop is treated as a string
+    parts = re.split(r'STOP', parameter_input)
     # Step 2: Remove the last item
     parts = parts[:-1]
     # Step 3: Keep only the first character of each remaining item
@@ -111,12 +143,25 @@ def translate_string():
     # Step 4: Join them back into a string
     result = ''.join(first_chars)
     
-    text_to_translate = f"My Name is {result}"
-    
+    text_to_translate = None
+    prompt = "Unconstructed Prompt"
+
+    if result.isdigit():        
+        text_to_translate = f"My height is {result}"
+        prompt = f"Give translation of {text_to_translate} in Malay, Thai and Vietnam language without any commentaries"
+    else:
+        word_embedding = embedding_model.encode(result, convert_to_tensor=True)
+        # Compute similarity
+        occupation_score = util.cos_sim(word_embedding, occupation_embeddings).max().item()
+        if occupation_score > 0.7: 
+            text_to_translate = f"My occupation is {result}"
+            prompt = f"Give translation of {text_to_translate} in Malay, Thai and Vietnam language without any commentaries"
+        else: 
+            text_to_translate = f"My Name is {result}"
+            prompt = f"Give translation of {text_to_translate} in Malay, Thai and Vietnam language without any commentaries"
+
     if not text_to_translate:
         return "Missing 'text_to_translate' parameter", 400
-    
-    prompt = f"Give translation of {text_to_translate} in Malay, Thai and Vietnam language without any commentaries"
     
     headers = {
         "accept": "text/plain",
@@ -158,68 +203,10 @@ def translate_string():
     except (KeyError, IndexError):
         return jsonify({"error": "Unexpected response format", "raw_response": response.text}), 500
 
-@app.route('/predict_text')
-def predict_text():
-    API_KEY = "sk-hwe6UCi9I0WCUOkekD16oQ"  # Replace with your actual Sea-Lion API key
-    SEA_LION_URL = "https://api.sea-lion.ai/v1/chat/completions"
-    MODEL_NAME = "aisingapore/Llama-SEA-LION-v3.5-8B-R"
-    
-    parameter_input = request.args.get('gesture_words_array')
-    print("gesture_words_array =", parameter_input)
-    print("Type:", type(parameter_input))
-    
-    if parameter_input is None:
-        return "Missing 'gesture_words_array' parameter", 400
-    #gesture_words_array = "Fish, taste, salty,?"
-    
-    if '?' in parameter_input:
-        prompt = f"Construct a simple question using only {parameter_input} words in English and then translates to Malay and Thai without any commentaries"
-    else:
-        prompt = f"Construct a simple sentence using only {parameter_input} words in English and then translates to Malay and Thai without any commentaries"
-    
-    headers = {
-        "accept": "text/plain",
-        "Authorization": f"Bearer {API_KEY}",
-        "Content-Type": "application/json"
-    }
-    
-    payload = {
-        "model": MODEL_NAME,
-        "messages": [
-            {
-                "role": "user",
-                "content": prompt
-            }
-        ],
-        "chat_template_kwargs": {
-            "thinking_mode": "off"
-        }
-    }
-    
-    try:
-        response = requests.post(SEA_LION_URL, headers=headers, json=payload)
-        response.raise_for_status()
-        data = response.json()
-
-        # Extract the translated content from the nested response
-        translated_text = data['choices'][0]['message']['content'].strip()
-
-        return jsonify({
-            "original": parameter_input,
-            "translated": translated_text,
-            "model": data.get("model"),
-            "tokens_used": data.get("usage", {}),
-            "response_id": data.get("id")
-        })
-
-    except requests.exceptions.RequestException as e:
-        return jsonify({"error": "Predict failed", "details": str(e)}), 500
-    except (KeyError, IndexError):
-        return jsonify({"error": "Unexpected response format", "raw_response": response.text}), 500
-    return "BIMTranslator Prototype V1"
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=8080)
+
 
 
 
