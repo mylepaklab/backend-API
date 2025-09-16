@@ -30,10 +30,11 @@ known_animations = {
 }
 
 known_occupations = [
-    "Doctor", 
+    "Doktor", 
     "Jurutera", 
     "Chef", 
-    "Cikgu", 
+    "Cikgu",
+    "Guru",
     "Jururawat",
     "Ahli Sukan",
     "Menteri",
@@ -45,7 +46,10 @@ known_occupations = [
     "Askar",
     "Guru",
     "Akauntan",
-    "Ahli Usahawan"
+    "Ahli Usahawan",
+    "Parlimen",
+    "Ceo",
+    "Ketua Pengarah"
     ]
 
 animation_keys = list(known_animations.keys())
@@ -210,6 +214,7 @@ def translate_string():
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=8080)
+
 
 
 
