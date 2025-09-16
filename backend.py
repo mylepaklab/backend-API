@@ -8,6 +8,8 @@ import os
 # New: Sentence embedding
 from sentence_transformers import SentenceTransformer, util
 import torch
+from rapidfuzz import fuzz, process
+
 app = Flask(__name__)
 
 # Only allow requests from specific frontends and allow credentials
@@ -44,12 +46,13 @@ known_occupations = [
     "Polis",
     "Bomba",
     "Askar",
-    "Guru",
+    "Guru Besar",
     "Akauntan",
     "Ahli Usahawan",
     "Parlimen",
     "Ceo",
-    "Ketua Pengarah"
+    "Ketua Pengarah",
+    "Surirumah"
     ]
 
 animation_keys = list(known_animations.keys())
@@ -151,6 +154,8 @@ def translate_string():
         text_to_translate = f"My height is {result}"
         prompt = f"Give translation of {text_to_translate} in Malay, Thai and Vietnam language without any commentaries"
     else:
+        # Fuzzy matching
+        match, fuzzy_score, _ = process.extractOne(result, known_occupations, scorer=fuzz.ratio)
         word_embedding = embedding_model.encode(result, convert_to_tensor=True)
         # Compute cosine similarity between input and all occupation embeddings
         cos_scores = util.cos_sim(word_embedding, occupation_embeddings)[0]
@@ -159,7 +164,12 @@ def translate_string():
         occupation_best_score = cos_scores[best_match_idx].item()
         # Get the matched occupation string
         matched_occupation = known_occupations[best_match_idx]
+        
         if occupation_best_score >= 0.7: 
+            text_to_translate = f"My occupation is {matched_occupation}"
+            prompt = f"Give translation of {text_to_translate} in Malay, Thai and Vietnam language without any commentaries"
+        elif fuzzy_score >= 85:
+            matched_occupation = match
             text_to_translate = f"My occupation is {matched_occupation}"
             prompt = f"Give translation of {text_to_translate} in Malay, Thai and Vietnam language without any commentaries"
         else: 
@@ -214,6 +224,7 @@ def translate_string():
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=8080)
+
 
 
 
