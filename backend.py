@@ -120,7 +120,7 @@ def match_animation_sequence():
         
 @app.route('/')
 def index():
-    messageString = "Final Route for this API is /health, /get_name, /translate_string and /match_animation_sequence"
+    messageString = "Final Route for this API is /health, /get_name, /form_answer and /match_animation_sequence"
     return messageString
 
 @app.route('/health')
@@ -129,9 +129,9 @@ def health():
 
 @app.route('/get_name')
 def get_name():
-    return "BIMTranslator Prototype V1"
+    return "AI-BIMTranslator Prototype V1"
 
-@app.route('/translate_string')
+@app.route('/form_answer')
 def translate_string():
     API_KEY = "sk-hwe6UCi9I0WCUOkekD16oQ"  # Replace with your actual Sea-Lion API key
     SEA_LION_URL = "https://api.sea-lion.ai/v1/chat/completions"
@@ -146,16 +146,21 @@ def translate_string():
     else:
         result = parameter_input
 
-    result = result.strip().title()  # or .lower(), depending on your embeddings
+    result = result.strip().title() 
     text_to_translate = None
-    prompt = "Unconstructed Prompt"
+    prompt = None
+    matched_occupation = None
 
     if result.isdigit():        
         text_to_translate = f"My height is {result}"
         prompt = f"Give translation of {text_to_translate} in Malay, Thai and Vietnam language without any commentaries"
     else:
-        # Fuzzy matching
-        match, fuzzy_score, _ = process.extractOne(result, known_occupations, scorer=fuzz.ratio)
+        match = None
+        fuzzy_score = 0
+        try:
+            match, fuzzy_score, _ = process.extractOne(result, known_occupations, scorer=fuzz.ratio)
+        except TypeError:
+            pass
         word_embedding = embedding_model.encode(result, convert_to_tensor=True)
         # Compute cosine similarity between input and all occupation embeddings
         cos_scores = util.cos_sim(word_embedding, occupation_embeddings)[0]
@@ -164,12 +169,8 @@ def translate_string():
         occupation_best_score = cos_scores[best_match_idx].item()
         # Get the matched occupation string
         matched_occupation = known_occupations[best_match_idx]
-        
-        if occupation_best_score >= 0.7: 
-            text_to_translate = f"My occupation is {matched_occupation}"
-            prompt = f"Give translation of {text_to_translate} in Malay, Thai and Vietnam language without any commentaries"
-        elif fuzzy_score >= 85:
-            matched_occupation = match
+        if occupation_best_score >= 0.7 or fuzzy_score >= 85:
+            matched_occupation = matched_occupation if occupation_best_score >= 0.7 else match
             text_to_translate = f"My occupation is {matched_occupation}"
             prompt = f"Give translation of {text_to_translate} in Malay, Thai and Vietnam language without any commentaries"
         else: 
@@ -177,7 +178,7 @@ def translate_string():
             prompt = f"Give translation of {text_to_translate} in Malay, Thai and Vietnam language without any commentaries"
 
     if not text_to_translate:
-        return "Missing 'text_to_translate' parameter", 400
+        return jsonify({"error": "Missing 'text_to_translate' parameter"}), 400
     
     headers = {
         "accept": "text/plain",
@@ -209,7 +210,7 @@ def translate_string():
         return jsonify({
             "original": text_to_translate,
             "translated": translated_text,
-            "matched_occupation": matched_occupation if occupation_best_score >= 0.7 else None,
+            "matched_occupation": matched_occupation if (occupation_best_score >= 0.7 or fuzzy_score >= 85) else None,
             "confidence": round(occupation_best_score, 4),
             "model": data.get("model"),
             "tokens_used": data.get("usage", {}),
@@ -224,15 +225,3 @@ def translate_string():
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=8080)
-
-
-
-
-
-
-
-
-
-
-
-
