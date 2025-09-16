@@ -150,13 +150,14 @@ def translate_string():
     text_to_translate = None
     prompt = None
     matched_occupation = None
+    occupation_best_score = 0
+    fuzzy_score = 0
 
     if result.isdigit():        
         text_to_translate = f"My height is {result} cm"
         prompt = f"Give translation of {text_to_translate} in Malay, Thai and Vietnam language without any commentaries"
     else:
         match = None
-        fuzzy_score = 0
         try:
             match, fuzzy_score, _ = process.extractOne(result, known_occupations, scorer=fuzz.ratio)
         except TypeError:
@@ -225,5 +226,6 @@ def translate_string():
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=8080)
+
 
 
