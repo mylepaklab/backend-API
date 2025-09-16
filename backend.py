@@ -133,9 +133,9 @@ def get_name():
 
 @app.route('/form_answer')
 def translate_string():
-    API_KEY = "sk-hwe6UCi9I0WCUOkekD16oQ"  # Replace with your actual Sea-Lion API key
+    API_KEY = "sk-CYE-0McMZfG4Qn7Jk7CClg"  # Replace with your actual Sea-Lion API key
     SEA_LION_URL = "https://api.sea-lion.ai/v1/chat/completions"
-    MODEL_NAME = "aisingapore/Llama-SEA-LION-v3.5-8B-R"
+    MODEL_NAME = "aisingapore/Gemma-SEA-LION-v4-27B-IT"
     
     parameter_input = request.args.get('text_to_translate')
     if not parameter_input:
@@ -225,3 +225,4 @@ def translate_string():
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=8080)
+
