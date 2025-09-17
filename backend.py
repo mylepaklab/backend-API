@@ -16,7 +16,9 @@ app = Flask(__name__)
 CORS(app, supports_credentials=True, origins=[
     "http://localhost:3000",
     "https://bim-translator-app-537545827003.asia-southeast1.run.app",
-    "https://bim-translator-l4md.vercel.app"
+    "https://bim-translator-l4md.vercel.app",
+    "https://localhost:3000",
+    "https://192.168.1.7:3000"
 ])
 
 ANIMATION_FOLDER = "animation-sequence-by-word"
@@ -226,6 +228,7 @@ def translate_string():
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=8080)
+
 
 
 
